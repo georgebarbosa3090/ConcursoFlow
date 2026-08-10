@@ -54,3 +54,50 @@ export async function gerarFeedbackQuestao(
     return "Não foi possível gerar o feedback da IA no momento. Estude a justificativa padrão!";
   }
 }
+
+export async function extrairEditalComIA(titulo: string, banca: string, url: string) {
+  const systemPrompt = `Você é um Agente Especialista em Editais de Concursos Públicos Brasileiros.
+Sua missão é deduzir e gerar a estrutura de um edital com base no título do concurso e na banca informada.
+Você deve responder ESTRITAMENTE em formato JSON, sem marcação markdown (sem \`\`\`json), com a seguinte estrutura exata:
+{
+  "concurso": "Nome do Concurso",
+  "banca": "Nome da Banca",
+  "cargo": "Nome do Cargo Deduzido",
+  "dataProva": "A definir",
+  "urlOrigem": "URL fornecida",
+  "estrategiaBanca": "Dica estratégica de 1 parágrafo sobre como esta banca cobra as questões.",
+  "disciplinas": [
+    {
+      "nome": "Nome da Disciplina",
+      "peso": 1.5,
+      "topicos": ["Tópico 1", "Tópico 2", "Tópico 3"]
+    }
+  ]
+}
+Gere disciplinas realistas (Português, Raciocínio Lógico, Informática, Direitos) e tópicos típicos exigidos por essa banca para o cargo provável. Use pesos de 1 a 2.`;
+
+  const userPrompt = `Por favor, gere a estrutura JSON para o seguinte concurso:
+Título: ${titulo}
+Banca: ${banca}
+URL do Edital: ${url}`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.5,
+      response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) throw new Error("Sem resposta da OpenAI");
+
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Erro na extração de edital via IA:", error);
+    throw new Error("Falha na geração do edital com IA.");
+  }
+}
