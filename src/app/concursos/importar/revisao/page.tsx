@@ -3,46 +3,48 @@
 import { MainLayout } from "@/components/layout/main-layout";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronDown, ChevronRight } from "lucide-react";
+import { CheckCircle2, ChevronDown, Loader2 } from "lucide-react";
 
 export default function RevisaoEditalPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  
-  // No mundo real, os dados viriam do estado global (Zustand) ou de uma query do banco/cache.
-  // Aqui usamos o mock como exemplo.
-  const dadosExtraidos = {
-    concurso: "Polícia Federal - Agente",
-    banca: "Cebraspe",
-    cargo: "Agente de Polícia Federal",
-    dataProva: "12/10/2026",
-    disciplinas: [
-      {
-        nome: "Língua Portuguesa", peso: 1,
-        topicos: ["Compreensão de textos", "Tipologia textual", "Ortografia", "Sintaxe"]
-      },
-      {
-        nome: "Raciocínio Lógico", peso: 1.5,
-        topicos: ["Lógica proposicional", "Diagramas", "Probabilidade"]
-      },
-      {
-        nome: "Noções de Informática", peso: 1.5,
-        topicos: ["Redes de Computadores", "Segurança da Informação", "Banco de Dados"]
-      }
-    ]
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [dadosExtraidos, setDadosExtraidos] = useState<any>(null);
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    const stored = sessionStorage.getItem("importedEditalData");
+    if (stored) {
+      setDadosExtraidos(JSON.parse(stored));
+    } else {
+      router.push("/concursos/novo"); // Volta se não tiver dados
+    }
+  }, [router]);
 
-  const handleConfirmar = () => {
-    // Aqui chamaria a API para persistir o plano definitivo.
-    alert("Conteúdo programático salvo com sucesso!");
-    router.push("/plano");
+  const handleConfirmar = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/editais/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dadosExtraidos)
+      });
+
+      if (res.ok) {
+        sessionStorage.removeItem("importedEditalData");
+        alert("Edital salvo com sucesso! Crie agora seu plano de estudos.");
+        router.push("/plano");
+      } else {
+        alert("Erro ao salvar edital no banco de dados.");
+        setIsLoading(false);
+      }
+    } catch {
+      alert("Falha na comunicação com o servidor.");
+      setIsLoading(false);
+    }
   };
 
-  if (!isClient) return null;
+  if (!isClient || !dadosExtraidos) return null;
 
   return (
     <MainLayout>
@@ -82,7 +84,7 @@ export default function RevisaoEditalPage() {
           <p className="text-sm text-slate-500 mb-6">Você pode revisar e editar as disciplinas e tópicos identificados antes de gerar seu plano de estudos.</p>
           
           <div className="space-y-4">
-            {dadosExtraidos.disciplinas.map((disc, idx) => (
+            {dadosExtraidos.disciplinas?.map((disc: any, idx: number) => (
               <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden">
                 <div className="bg-slate-50 px-4 py-3 flex items-center justify-between cursor-pointer">
                   <div className="flex items-center gap-2">
@@ -93,16 +95,13 @@ export default function RevisaoEditalPage() {
                 </div>
                 <div className="p-4 bg-white">
                   <ul className="space-y-2">
-                    {disc.topicos.map((topico, tIdx) => (
+                    {disc.topicos.map((topico: string, tIdx: number) => (
                       <li key={tIdx} className="flex items-center gap-2 text-sm text-slate-600">
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                         {topico}
                       </li>
                     ))}
                   </ul>
-                  <button className="text-blue-600 text-sm font-medium mt-3 hover:underline">
-                    + Adicionar Tópico Manualmente
-                  </button>
                 </div>
               </div>
             ))}
@@ -110,12 +109,16 @@ export default function RevisaoEditalPage() {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <button className="px-6 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors font-medium">
+          <button 
+            onClick={() => router.push("/concursos")}
+            className="px-6 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors font-medium">
             Descartar
           </button>
           <button 
             onClick={handleConfirmar}
-            className="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors font-medium shadow-sm">
+            disabled={isLoading}
+            className="flex items-center gap-2 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors font-medium shadow-sm disabled:opacity-70">
+            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
             Confirmar e Gerar Itinerário
           </button>
         </div>

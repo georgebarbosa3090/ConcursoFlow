@@ -27,6 +27,8 @@ export default function NovoConcursoPage() {
       });
 
       if (res.ok) {
+        const result = await res.json();
+        sessionStorage.setItem("importedEditalData", JSON.stringify(result.dados));
         router.push("/concursos/importar/revisao");
       } else {
         alert("Erro ao processar edital. Verifique a URL e tente novamente.");
