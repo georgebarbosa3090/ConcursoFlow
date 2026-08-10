@@ -128,3 +128,49 @@ URL do Edital: ${url}`;
     };
   }
 }
+
+export async function gerarNovasQuestoes(banca: string, disciplina: string, quantidade: number = 3) {
+  const systemPrompt = `Você é um Criador de Questões Especialista em Concursos Públicos Brasileiros.
+Sua missão é gerar exatamente ${quantidade} questões de nível de concurso para a disciplina informada, emulando perfeitamente o estilo e a dificuldade da banca escolhida.
+Responda ESTRITAMENTE em formato JSON, sem marcação markdown, contendo um array de questões com a seguinte estrutura:
+{
+  "questoes": [
+    {
+      "text": "Texto do enunciado da questão...",
+      "options": ["Alternativa A", "Alternativa B", "Alternativa C", "Alternativa D", "Alternativa E"],
+      "correctOption": 1, // índice da resposta correta (0 a 4)
+      "explanation": "Explicação completa do porquê a opção está correta e as outras erradas, baseada em lei ou teoria.",
+      "type": "MULTIPLA_ESCOLHA" // ou CERTO_ERRADO, nesse caso as options são ["Certo", "Errado"]
+    }
+  ]
+}
+
+Regras:
+1. Se a banca for CEBRASPE/CESPE, o type OBRIGATÓRIAMENTE deve ser CERTO_ERRADO, options OBRIGATÓRIAMENTE devem ser ["Certo", "Errado"] e correctOption 0 ou 1.
+2. Se a banca for FCC ou FGV, type MULTIPLA_ESCOLHA e 5 alternativas.
+3. Use casos hipotéticos para FGV e textos de lei seca para FCC.`;
+
+  const userPrompt = `Gere ${quantidade} questões inéditas ou baseadas em provas reais recentes.
+Banca: ${banca}
+Disciplina: ${disciplina}`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.8, // Mais criatividade para não repetir
+      response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) throw new Error("Sem resposta da OpenAI");
+
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Erro ao gerar questões via IA:", error);
+    throw new Error("Falha na geração de questões.");
+  }
+}
