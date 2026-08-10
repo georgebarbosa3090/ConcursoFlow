@@ -12,6 +12,16 @@ export default async function ResolverPage({ params }: { params: { id: string } 
     redirect("/login");
   }
 
+  // Handle "first-available" magic keyword from the Study Plan page
+  if (params.id === "first-available") {
+    const firstQ = await prisma.question.findFirst({
+      orderBy: { createdAt: 'desc' }
+    });
+    if (firstQ) {
+      redirect(`/questoes/resolver/${firstQ.id}`);
+    }
+  }
+
   const question = await prisma.question.findUnique({
     where: { id: params.id },
     include: { topic: { include: { subject: true } } }
