@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  exams           Exam[]
+  availabilities  StudyAvailability[]
+  studyPlans      StudyPlan[]
+  answers         UserAnswer[]
+  errorNotes      ErrorNotebookItem[]
+  materials       Material[]
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  TEACHER
+}
+
+model Exam {
+  id        String   @id @default(uuid())
+  title     String
+  agency    String?
+  board     String?
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  documents ExamDocument[]
+  subjects  Subject[]
+  plans     StudyPlan[]
+}
+
+model ExamDocument {
+  id        String   @id @default(uuid())
+  url       String
+  version   String   @default("1.0")
+  examId    String
+  exam      Exam     @relation(fields: [examId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String
+  weight    Float    @default(1.0)
+  examId    String
+  exam      Exam     @relation(fields: [examId], references: [id])
+  topics    Topic[]
+}
+
+model Topic {
+  id        String   @id @default(uuid())
+  name      String
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  skills    Skill[]
+}
+
+model Skill {
+  id        String   @id @default(uuid())
+  name      String
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id])
+}
+
+model StudyAvailability {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  dayOfWeek Int      // 0-6
+  minutes   Int
+}
+
+model StudyPlan {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  examId    String
+  exam      Exam     @relation(fields: [examId], references: [id])
+  createdAt DateTime @default(now())
+  sessions  StudySession[]
+}
+
+model StudySession {
+  id        String   @id @default(uuid())
+  planId    String
+  plan      StudyPlan @relation(fields: [planId], references: [id])
+  date      DateTime
+  duration  Int      // in minutes
+  type      String   // theory, question, review
+  status    String   @default("PENDING")
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  text          String
+  options       String[]
+  correctOption Int
+  explanation   String?
+  answers       UserAnswer[]
+}
+
+model UserAnswer {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  questionId   String
+  question     Question @relation(fields: [questionId], references: [id])
+  selected     Int
+  isCorrect    Boolean
+  timeSpent    Int?     // seconds
+  createdAt    DateTime @default(now())
+}
+
+model ErrorNotebookItem {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  questionId   String
+  errorType    String
+  note         String?
+  createdAt    DateTime @default(now())
+}
+
+model Material {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  title        String
+  content      String
+  type         String   // summary, flashcard, pdf
+  createdAt    DateTime @default(now())
+}
