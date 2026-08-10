@@ -120,6 +120,7 @@ model Question {
   topicId       String?
   topic         Topic?   @relation(fields: [topicId], references: [id])
   answers       UserAnswer[]
+  errorNotes    ErrorNotebookItem[]
 }
 
 model UserAnswer {
@@ -139,9 +140,16 @@ model ErrorNotebookItem {
   userId       String
   user         User     @relation(fields: [userId], references: [id])
   questionId   String
+  question     Question @relation(fields: [questionId], references: [id])
   errorType    String
   note         String?
   createdAt    DateTime @default(now())
+  
+  // SRS Fields (Spaced Repetition System)
+  nextReview   DateTime @default(now())
+  interval     Int      @default(0)
+  easeFactor   Float    @default(2.5)
+  repetitions  Int      @default(0)
 }
 
 model Material {
