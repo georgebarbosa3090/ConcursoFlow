@@ -1,14 +1,12 @@
-"use client";
-
 import { MainLayout } from "@/components/layout/main-layout";
 import { BookOpen, FileText, Brain, Video, Plus, Search } from "lucide-react";
+import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import Link from "next/link";
 
-const materiais = [
-  { id: 1, titulo: "Teoria Geral do Direito Constitucional", disciplina: "Dir. Constitucional", tipo: "PDF", paginas: 45, progresso: 60 },
-  { id: 2, titulo: "Redes: Camadas OSI e TCP/IP", disciplina: "Informática", tipo: "Mapa Mental", paginas: 8, progresso: 100 },
-  { id: 3, titulo: "Sintaxe — Concordância e Regência", disciplina: "Português", tipo: "Resumo", paginas: 12, progresso: 30 },
-  { id: 4, titulo: "Raciocínio Lógico — Tabelas-Verdade", disciplina: "Raciocínio Lógico", tipo: "PDF", paginas: 22, progresso: 0 },
-];
+export const dynamic = "force-dynamic";
 
 const tipoIcon = {
   "PDF": FileText,
@@ -24,14 +22,54 @@ const tipoCor = {
   "Vídeo": "bg-orange-50 text-orange-700 border-orange-100",
 };
 
-export default function MateriaisPage() {
+export default async function MateriaisPage() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || !session.user) {
+    redirect("/login");
+  }
+
+  // Busca materiais salvos pelo usuário no banco de dados
+  let materiais = await prisma.material.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  // Se não tiver nenhum, vamos gerar alguns baseados no edital dele para demonstração de Inteligência
+  if (materiais.length === 0) {
+    const exams = await prisma.exam.findMany({
+      where: { userId: session.user.id },
+      include: { subjects: { include: { topics: true } } }
+    });
+
+    if (exams.length > 0 && exams[0].subjects.length > 0) {
+      const sub1 = exams[0].subjects[0];
+      const sub2 = exams[0].subjects.length > 1 ? exams[0].subjects[1] : exams[0].subjects[0];
+      
+      materiais = [
+        { 
+          id: "mock1", title: `Teoria Geral de ${sub1.name}`, userId: session.user.id, content: "", source: null, url: null, createdAt: new Date(), 
+          type: "PDF", paginas: 45, progresso: 60, disciplina: sub1.name 
+        },
+        { 
+          id: "mock2", title: `Mapa Mental: ${sub1.topics[0]?.name || "Fundamentos"}`, userId: session.user.id, content: "", source: null, url: null, createdAt: new Date(), 
+          type: "Mapa Mental", paginas: 1, progresso: 100, disciplina: sub1.name 
+        },
+        { 
+          id: "mock3", title: `Resumo Esquematizado - ${sub2.name}`, userId: session.user.id, content: "", source: null, url: null, createdAt: new Date(), 
+          type: "Resumo", paginas: 12, progresso: 0, disciplina: sub2.name 
+        },
+      ] as any;
+    }
+  }
+
   return (
     <MainLayout>
       <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Materiais de Estudo</h2>
-            <p className="text-slate-500">PDFs, resumos e mapas mentais gerados pelo seu plano de estudos.</p>
+            <p className="text-slate-500">Apostilas, resumos e mapas mentais gerados pela IA ou importados.</p>
           </div>
           <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition shadow-sm">
             <Plus size={18} /> Adicionar Material
@@ -48,45 +86,55 @@ export default function MateriaisPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {materiais.map(mat => {
-            const Icon = tipoIcon[mat.tipo as keyof typeof tipoIcon] ?? FileText;
-            const cor = tipoCor[mat.tipo as keyof typeof tipoCor] ?? "bg-slate-100 text-slate-700 border-slate-200";
-            return (
-              <div key={mat.id} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all p-5 flex flex-col gap-4">
-                <div className="flex items-start justify-between gap-3">
+          {materiais.length === 0 ? (
+            <div className="md:col-span-2 text-center py-12 text-slate-500 bg-white rounded-xl border border-slate-200">
+              <p>Nenhum material de estudo encontrado.</p>
+              <p className="text-sm">Configure seu edital para que a IA sugira e crie resumos focados.</p>
+            </div>
+          ) : (
+            materiais.map((mat: any) => {
+              const tipoStr = mat.type as string;
+              const Icon = tipoIcon[tipoStr as keyof typeof tipoIcon] ?? FileText;
+              const cor = tipoCor[tipoStr as keyof typeof tipoCor] ?? "bg-slate-100 text-slate-700 border-slate-200";
+              const progresso = mat.progresso ?? 0;
+              
+              return (
+                <div key={mat.id} className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all p-5 flex flex-col gap-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-slate-900 leading-snug">{mat.title}</h3>
+                      <p className="text-sm text-slate-500 mt-1">{mat.disciplina || "Geral"} • {mat.paginas || 10} páginas</p>
+                    </div>
+                    <span className={`shrink-0 flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full border ${cor}`}>
+                      <Icon size={13} /> {tipoStr}
+                    </span>
+                  </div>
+
                   <div>
-                    <h3 className="font-bold text-slate-900 leading-snug">{mat.titulo}</h3>
-                    <p className="text-sm text-slate-500 mt-1">{mat.disciplina} • {mat.paginas} páginas</p>
+                    <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                      <span>Progresso</span>
+                      <span className={progresso === 100 ? "text-green-600 font-bold" : ""}>{progresso}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all ${progresso === 100 ? "bg-green-500" : "bg-blue-500"}`}
+                        style={{ width: `${progresso}%` }}
+                      />
+                    </div>
                   </div>
-                  <span className={`shrink-0 flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full border ${cor}`}>
-                    <Icon size={13} /> {mat.tipo}
-                  </span>
-                </div>
 
-                <div>
-                  <div className="flex justify-between text-xs text-slate-500 mb-1.5">
-                    <span>Progresso</span>
-                    <span className={mat.progresso === 100 ? "text-green-600 font-bold" : ""}>{mat.progresso}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all ${mat.progresso === 100 ? "bg-green-500" : "bg-blue-500"}`}
-                      style={{ width: `${mat.progresso}%` }}
-                    />
+                  <div className="flex gap-2 pt-1">
+                    <button className="flex-1 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
+                      {progresso === 0 ? "Iniciar Leitura" : progresso === 100 ? "Revisar" : "Continuar"}
+                    </button>
+                    <button className="px-3 py-2 text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-lg transition" title="Criar Flashcards com IA">
+                      <Brain size={16} />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex gap-2 pt-1">
-                  <button className="flex-1 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
-                    {mat.progresso === 0 ? "Iniciar Leitura" : mat.progresso === 100 ? "Revisar" : "Continuar"}
-                  </button>
-                  <button className="px-3 py-2 text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-lg transition">
-                    <Brain size={16} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </MainLayout>
