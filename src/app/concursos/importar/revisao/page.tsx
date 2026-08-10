@@ -95,12 +95,12 @@ export default function RevisaoEditalPage() {
                 </div>
                 <div className="p-4 bg-white">
                   <ul className="space-y-2">
-                    {disc.topicos.map((topico: string, tIdx: number) => (
+                    {Array.isArray(disc.topicos) ? disc.topicos.map((topico: string, tIdx: number) => (
                       <li key={tIdx} className="flex items-center gap-2 text-sm text-slate-600">
                         <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                         {topico}
                       </li>
-                    ))}
+                    )) : null}
                   </ul>
                 </div>
               </div>

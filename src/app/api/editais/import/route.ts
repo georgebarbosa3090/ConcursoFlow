@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { extrairEditalComIA } from "@/lib/ai";
 
+export const maxDuration = 60; // Permite até 60s na Vercel para a IA responder
+
 export async function POST(req: Request) {
   try {
     const { url, title, board } = await req.json();
