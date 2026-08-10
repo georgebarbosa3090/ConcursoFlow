@@ -1,7 +1,7 @@
 "use client";
 
 import { MainLayout } from "@/components/layout/main-layout";
-import { BookOpen, FileText, Brain, Youtube, Plus, Search } from "lucide-react";
+import { BookOpen, FileText, Brain, Video, Plus, Search } from "lucide-react";
 
 const materiais = [
   { id: 1, titulo: "Teoria Geral do Direito Constitucional", disciplina: "Dir. Constitucional", tipo: "PDF", paginas: 45, progresso: 60 },
@@ -14,7 +14,7 @@ const tipoIcon = {
   "PDF": FileText,
   "Mapa Mental": Brain,
   "Resumo": BookOpen,
-  "Vídeo": Youtube,
+  "Vídeo": Video,
 };
 
 const tipoCor = {
