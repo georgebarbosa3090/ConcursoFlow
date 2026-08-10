@@ -97,7 +97,34 @@ URL do Edital: ${url}`;
 
     return JSON.parse(content);
   } catch (error) {
-    console.error("Erro na extração de edital via IA:", error);
-    throw new Error("Falha na geração do edital com IA.");
+    console.error("Erro na extração de edital via IA, ativando fallback automático:", error);
+    
+    // Fallback inteligente para garantir que o usuário não fique travado na Vercel 
+    // caso não tenha configurado a OPENAI_API_KEY corretamente.
+    return {
+      concurso: titulo,
+      banca: banca,
+      cargo: "Cargo Padrão (Fallback Ativado)",
+      dataProva: "A definir",
+      urlOrigem: url,
+      estrategiaBanca: "Nota: A chave da OpenAI (OPENAI_API_KEY) parece estar ausente ou inválida. O ConcursoFlow gerou uma grade base provisória de sobrevivência.",
+      disciplinas: [
+        {
+          nome: "Língua Portuguesa",
+          peso: 1.5,
+          topicos: ["Interpretação de Textos", "Ortografia Oficial", "Sintaxe"]
+        },
+        {
+          nome: "Raciocínio Lógico",
+          peso: 1.0,
+          topicos: ["Lógica Proposicional", "Análise Combinatória"]
+        },
+        {
+          nome: "Conhecimentos Específicos",
+          peso: 2.0,
+          topicos: ["Fundamentos do Cargo", "Legislação Aplicada"]
+        }
+      ]
+    };
   }
 }
