@@ -70,6 +70,7 @@ model Topic {
   subjectId String
   subject   Subject  @relation(fields: [subjectId], references: [id])
   skills    Skill[]
+  questions Question[]
 }
 
 model Skill {
@@ -113,6 +114,11 @@ model Question {
   options       String[]
   correctOption Int
   explanation   String?
+  board         String?
+  year          Int?
+  type          String   @default("MULTIPLE_CHOICE")
+  topicId       String?
+  topic         Topic?   @relation(fields: [topicId], references: [id])
   answers       UserAnswer[]
 }
 
@@ -144,6 +150,8 @@ model Material {
   user         User     @relation(fields: [userId], references: [id])
   title        String
   content      String
-  type         String   // summary, flashcard, pdf
+  type         String   // summary, flashcard, pdf, video
+  url          String?
+  source       String?
   createdAt    DateTime @default(now())
 }
