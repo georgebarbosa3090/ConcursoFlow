@@ -23,6 +23,39 @@ export default async function ConcursosPage() {
   const concursosDestaque = [
     {
       id: "mock-1",
+      title: "Tribunal de Contas do Estado (TCE-MA)",
+      board: "Fundação Getulio Vargas (FGV)",
+      status: "Edital Publicado",
+      statusColor: "bg-blue-100 text-blue-700",
+      vagas: 115,
+      salario: "R$ 10.423,00",
+      dataProva: "A definir",
+      local: "Maranhão"
+    },
+    {
+      id: "mock-2",
+      title: "Tribunal de Contas da União (TCU)",
+      board: "Cebraspe",
+      status: "Autorizado",
+      statusColor: "bg-orange-100 text-orange-700",
+      vagas: 150,
+      salario: "R$ 24.321,56",
+      dataProva: "Previsto",
+      local: "Nacional"
+    },
+    {
+      id: "mock-3",
+      title: "Controladoria-Geral da União (CGU)",
+      board: "FGV",
+      status: "Em Estudo",
+      statusColor: "bg-slate-100 text-slate-600",
+      vagas: 300,
+      salario: "R$ 20.924,80",
+      dataProva: "Sem Previsão",
+      local: "Nacional"
+    },
+    {
+      id: "mock-4",
       title: "Concurso Nacional Unificado (CNU) - Bloco 8",
       board: "Fundação Cesgranrio",
       status: "Inscrições Abertas",
@@ -30,39 +63,6 @@ export default async function ConcursosPage() {
       vagas: 692,
       salario: "R$ 7.436,29",
       dataProva: "05/05/2026",
-      local: "Nacional"
-    },
-    {
-      id: "mock-2",
-      title: "Tribunal Superior Eleitoral (TSE Unificado)",
-      board: "Cebraspe",
-      status: "Edital Publicado",
-      statusColor: "bg-blue-100 text-blue-700",
-      vagas: 410,
-      salario: "R$ 9.773,56",
-      dataProva: "01/06/2026",
-      local: "Nacional"
-    },
-    {
-      id: "mock-3",
-      title: "Polícia Federal (PF) - Agente",
-      board: "Cebraspe",
-      status: "Autorizado",
-      statusColor: "bg-orange-100 text-orange-700",
-      vagas: 2000,
-      salario: "R$ 13.649,52",
-      dataProva: "A definir",
-      local: "Nacional"
-    },
-    {
-      id: "mock-4",
-      title: "Caixa Econômica Federal",
-      board: "Fundação Cesgranrio",
-      status: "Inscrições Encerradas",
-      statusColor: "bg-slate-100 text-slate-600",
-      vagas: 4000,
-      salario: "R$ 3.762,00",
-      dataProva: "26/05/2026",
       local: "Nacional"
     }
   ];

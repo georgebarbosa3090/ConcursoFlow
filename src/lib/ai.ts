@@ -170,7 +170,23 @@ Disciplina: ${disciplina}`;
 
     return JSON.parse(content);
   } catch (error) {
-    console.error("Erro ao gerar questões via IA:", error);
-    throw new Error("Falha na geração de questões.");
+    console.error("Erro ao gerar questões via IA, ativando fallback automático:", error);
+    
+    // Fallback provisório para desenvolvimento/Vercel (caso timeout ou falta de token)
+    return {
+      questoes: Array.from({ length: quantidade }).map((_, i) => ({
+        text: `(Questão Gerada por Fallback Automático) Sobre o assunto da disciplina de ${disciplina} na banca ${banca}, qual das afirmações abaixo é correta?`,
+        options: banca === 'CEBRASPE' ? ["Certo", "Errado"] : [
+          "Alternativa A: Afirmação completamente incorreta.",
+          "Alternativa B: Afirmação que parece certa, mas não é.",
+          "Alternativa C: A resposta correta com base na doutrina.",
+          "Alternativa D: Alternativa absurda.",
+          "Alternativa E: Erro de digitação da banca."
+        ],
+        correctOption: banca === 'CEBRASPE' ? 0 : 2,
+        explanation: "Esta é uma justificativa gerada pelo mecanismo de fallback porque a IA demorou muito para responder ou não possuía a chave (OPENAI_API_KEY) válida no momento da chamada.",
+        type: banca === 'CEBRASPE' ? "CERTO_ERRADO" : "MULTIPLA_ESCOLHA"
+      }))
+    };
   }
 }
