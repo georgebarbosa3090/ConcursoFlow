@@ -190,3 +190,50 @@ Disciplina: ${disciplina}`;
     };
   }
 }
+
+export async function gerarApostilaComIA(concurso: string, banca: string, disciplina: string, topico: string) {
+  const isTCEMA_TI = concurso.toUpperCase().includes('TCE') && concurso.toUpperCase().includes('TI');
+  
+  let systemPrompt = `Você é um Gerador de Apostilas Especialista em Concursos Públicos Brasileiros.
+Sua missão é criar um material estruturado em Markdown, profundo, claro e didático sobre o assunto solicitado.
+Aplique os seguintes princípios:
+- Breve Raio-X de como a banca ${banca} costuma cobrar esse tópico.
+- Explicações teóricas precisas, sem enrolação.
+- Diferenciação entre regra geral e exceção.
+- Casos práticos ou exemplos hipotéticos simulando questões da prova.
+- Destaque "Pegadinhas Comuns".
+- Estrutura clara usando Markdown (##, ###), tabelas, negritos e citações (>).`;
+
+  if (isTCEMA_TI) {
+    systemPrompt += `\nAlém disso, aja como o Especialista do TCE-MA 2026 para Auditor de TI.
+Integre conceitos de controle externo, auditoria pública e frameworks de governança de TI. Relacione a teoria do tópico com a prática de auditoria de sistemas.`;
+  }
+
+  const userPrompt = `Gere a apostila para o seguinte cenário:
+Concurso / Foco: ${concurso}
+Banca: ${banca}
+Disciplina: ${disciplina}
+Tópico/Assunto Específico: ${topico}
+
+Retorne APENAS o Markdown, sem texto antes ou depois. Inicie com um # Título Específico.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 2500,
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) throw new Error("Sem resposta da OpenAI");
+
+    return content;
+  } catch (error) {
+    console.error("Erro ao gerar apostila via IA:", error);
+    return `# Apostila: ${topico}\n\n> **Nota do Sistema**: Houve uma falha de conexão com a API de IA (Chave inválida ou limite). Abaixo está um esqueleto mockado.\n\n## 1. Introdução a ${topico}\nO assunto de ${topico} é fundamental para a prova da banca ${banca}.\n\n## 2. Como a banca cobra\nA ${banca} costuma tentar confundir o candidato trocando os conceitos centrais. Estude a literalidade se for FCC, ou a jurisprudência se for FGV/Cebraspe.`;
+  }
+}

@@ -1,0 +1,14 @@
+interface:
+  display_name: Apostilas para Concursos
+  short_description: Cria apostilas focadas no edital e na banca
+  default_prompt: Use $gerar-apostilas-concurso para criar uma apostila completa e
+    estratégica para meu concurso.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

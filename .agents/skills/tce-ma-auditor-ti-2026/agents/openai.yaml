@@ -1,0 +1,14 @@
+interface:
+  display_name: TCE-MA Auditor TI 2026
+  short_description: Preparação especializada para Auditor de TI
+  default_prompt: Use $tce-ma-auditor-ti-2026 para criar um caderno direcionado ao
+    concurso TCE-MA 2026.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

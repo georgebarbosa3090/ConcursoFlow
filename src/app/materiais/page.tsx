@@ -1,5 +1,5 @@
 import { MainLayout } from "@/components/layout/main-layout";
-import { BookOpen, FileText, Brain, Video, Plus, Search } from "lucide-react";
+import { BookOpen, FileText, Brain, Video, Plus, Search, Bot } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -71,9 +71,9 @@ export default async function MateriaisPage() {
             <h2 className="text-2xl font-bold text-slate-900">Materiais de Estudo</h2>
             <p className="text-slate-500">Apostilas, resumos e mapas mentais gerados pela IA ou importados.</p>
           </div>
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition shadow-sm">
-            <Plus size={18} /> Adicionar Material
-          </button>
+          <Link href="/materiais/gerar" className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-lg font-medium hover:opacity-90 transition shadow-md shadow-blue-500/20">
+            <Bot size={18} /> Gerar Apostila IA
+          </Link>
         </div>
 
         <div className="relative">
@@ -124,9 +124,9 @@ export default async function MateriaisPage() {
                   </div>
 
                   <div className="flex gap-2 pt-1">
-                    <button className="flex-1 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
+                    <Link href={`/materiais/ler/${mat.id}`} className="flex-1 flex justify-center items-center py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
                       {progresso === 0 ? "Iniciar Leitura" : progresso === 100 ? "Revisar" : "Continuar"}
-                    </button>
+                    </Link>
                     <button className="px-3 py-2 text-slate-500 hover:text-slate-800 border border-slate-200 hover:border-slate-300 rounded-lg transition" title="Criar Flashcards com IA">
                       <Brain size={16} />
                     </button>
