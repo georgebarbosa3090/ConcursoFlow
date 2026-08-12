@@ -97,35 +97,8 @@ URL do Edital: ${url}`;
 
     return JSON.parse(content);
   } catch (error) {
-    console.error("Erro na extração de edital via IA, ativando fallback automático:", error);
-    
-    // Fallback inteligente para garantir que o usuário não fique travado na Vercel 
-    // caso não tenha configurado a OPENAI_API_KEY corretamente.
-    return {
-      concurso: titulo,
-      banca: banca,
-      cargo: "Cargo Padrão (Fallback Ativado)",
-      dataProva: "A definir",
-      urlOrigem: url,
-      estrategiaBanca: "Nota: A chave da OpenAI (OPENAI_API_KEY) parece estar ausente ou inválida. O ConcursoFlow gerou uma grade base provisória de sobrevivência.",
-      disciplinas: [
-        {
-          nome: "Língua Portuguesa",
-          peso: 1.5,
-          topicos: ["Interpretação de Textos", "Ortografia Oficial", "Sintaxe"]
-        },
-        {
-          nome: "Raciocínio Lógico",
-          peso: 1.0,
-          topicos: ["Lógica Proposicional", "Análise Combinatória"]
-        },
-        {
-          nome: "Conhecimentos Específicos",
-          peso: 2.0,
-          topicos: ["Fundamentos do Cargo", "Legislação Aplicada"]
-        }
-      ]
-    };
+    console.error("Erro na extração de edital via IA:", error);
+    throw new Error("Falha ao se comunicar com a IA para extrair o edital. Verifique sua chave de API.");
   }
 }
 
@@ -170,24 +143,8 @@ Disciplina: ${disciplina}`;
 
     return JSON.parse(content);
   } catch (error) {
-    console.error("Erro ao gerar questões via IA, ativando fallback automático:", error);
-    
-    // Fallback provisório para desenvolvimento/Vercel (caso timeout ou falta de token)
-    return {
-      questoes: Array.from({ length: quantidade }).map((_, i) => ({
-        text: `(Questão Gerada por Fallback Automático) Sobre o assunto da disciplina de ${disciplina} na banca ${banca}, qual das afirmações abaixo é correta?`,
-        options: banca === 'CEBRASPE' ? ["Certo", "Errado"] : [
-          "Alternativa A: Afirmação completamente incorreta.",
-          "Alternativa B: Afirmação que parece certa, mas não é.",
-          "Alternativa C: A resposta correta com base na doutrina.",
-          "Alternativa D: Alternativa absurda.",
-          "Alternativa E: Erro de digitação da banca."
-        ],
-        correctOption: banca === 'CEBRASPE' ? 0 : 2,
-        explanation: "Esta é uma justificativa gerada pelo mecanismo de fallback porque a IA demorou muito para responder ou não possuía a chave (OPENAI_API_KEY) válida no momento da chamada.",
-        type: banca === 'CEBRASPE' ? "CERTO_ERRADO" : "MULTIPLA_ESCOLHA"
-      }))
-    };
+    console.error("Erro ao gerar questões via IA:", error);
+    throw new Error("Falha ao gerar questões com a IA. Verifique sua chave de API.");
   }
 }
 
@@ -234,6 +191,6 @@ Retorne APENAS o Markdown, sem texto antes ou depois. Inicie com um # Título Es
     return content;
   } catch (error) {
     console.error("Erro ao gerar apostila via IA:", error);
-    return `# Apostila: ${topico}\n\n> **Nota do Sistema**: Houve uma falha de conexão com a API de IA (Chave inválida ou limite). Abaixo está um esqueleto mockado.\n\n## 1. Introdução a ${topico}\nO assunto de ${topico} é fundamental para a prova da banca ${banca}.\n\n## 2. Como a banca cobra\nA ${banca} costuma tentar confundir o candidato trocando os conceitos centrais. Estude a literalidade se for FCC, ou a jurisprudência se for FGV/Cebraspe.`;
+    throw new Error("Falha ao gerar material com a IA. Verifique sua chave de API.");
   }
 }

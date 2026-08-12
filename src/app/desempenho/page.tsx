@@ -62,15 +62,28 @@ export default async function DesempenhoPage() {
 
   // Se o usuário não tiver disciplinas suficientes, o radar ficará vazio, mas a UI cuida disso
 
-  // Gráfico de Linha (Evolução por "Sessão" / Tempo)
-  // Como são poucos dados por enquanto, vamos apenas criar um mock contínuo terminando na taxa atual
-  const evolutionData = [
-    { name: 'Início', acertos: Math.max(0, prontidao - 20) },
-    { name: 'Sem 2', acertos: Math.max(0, prontidao - 15) },
-    { name: 'Sem 3', acertos: Math.max(0, prontidao - 5) },
-    { name: 'Sem 4', acertos: Math.max(0, prontidao - 2) },
-    { name: 'Hoje', acertos: prontidao },
-  ];
+  // Agrupar respostas por data (DD/MM) para o Gráfico de Evolução
+  const evolutionMap: Record<string, { total: number; correct: number }> = {};
+  
+  userAnswers.forEach(answer => {
+    const dateStr = answer.createdAt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    if (!evolutionMap[dateStr]) {
+      evolutionMap[dateStr] = { total: 0, correct: 0 };
+    }
+    evolutionMap[dateStr].total++;
+    if (answer.isCorrect) evolutionMap[dateStr].correct++;
+  });
+
+  const evolutionData = Object.keys(evolutionMap).map(dateStr => {
+    return {
+      name: dateStr,
+      acertos: Math.round((evolutionMap[dateStr].correct / evolutionMap[dateStr].total) * 100)
+    };
+  });
+
+  if (evolutionData.length === 0) {
+    evolutionData.push({ name: 'Hoje', acertos: 0 });
+  }
 
   return (
     <MainLayout>

@@ -35,33 +35,7 @@ export default async function MateriaisPage() {
     orderBy: { createdAt: 'desc' }
   });
 
-  // Se não tiver nenhum, vamos gerar alguns baseados no edital dele para demonstração de Inteligência
-  if (materiais.length === 0) {
-    const exams = await prisma.exam.findMany({
-      where: { userId: session.user.id },
-      include: { subjects: { include: { topics: true } } }
-    });
 
-    if (exams.length > 0 && exams[0].subjects.length > 0) {
-      const sub1 = exams[0].subjects[0];
-      const sub2 = exams[0].subjects.length > 1 ? exams[0].subjects[1] : exams[0].subjects[0];
-      
-      materiais = [
-        { 
-          id: "mock1", title: `Teoria Geral de ${sub1.name}`, userId: session.user.id, content: "", source: null, url: null, createdAt: new Date(), 
-          type: "PDF", paginas: 45, progresso: 60, disciplina: sub1.name 
-        },
-        { 
-          id: "mock2", title: `Mapa Mental: ${sub1.topics[0]?.name || "Fundamentos"}`, userId: session.user.id, content: "", source: null, url: null, createdAt: new Date(), 
-          type: "Mapa Mental", paginas: 1, progresso: 100, disciplina: sub1.name 
-        },
-        { 
-          id: "mock3", title: `Resumo Esquematizado - ${sub2.name}`, userId: session.user.id, content: "", source: null, url: null, createdAt: new Date(), 
-          type: "Resumo", paginas: 12, progresso: 0, disciplina: sub2.name 
-        },
-      ] as any;
-    }
-  }
 
   return (
     <MainLayout>
