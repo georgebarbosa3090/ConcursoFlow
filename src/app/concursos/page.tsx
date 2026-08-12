@@ -30,7 +30,8 @@ export default async function ConcursosPage() {
       vagas: 115,
       salario: "R$ 10.423,00",
       dataProva: "A definir",
-      local: "Maranhão"
+      local: "Maranhão",
+      disciplinas: ["Auditoria Governamental", "Contabilidade Pública", "Controle Externo", "AFO"]
     },
     {
       id: "mock-2",
@@ -41,7 +42,8 @@ export default async function ConcursosPage() {
       vagas: 150,
       salario: "R$ 24.321,56",
       dataProva: "Previsto",
-      local: "Nacional"
+      local: "Nacional",
+      disciplinas: ["Auditoria Governamental", "Controle Externo", "Análise de Dados", "AFO"]
     },
     {
       id: "mock-3",
@@ -52,7 +54,8 @@ export default async function ConcursosPage() {
       vagas: 300,
       salario: "R$ 20.924,80",
       dataProva: "Sem Previsão",
-      local: "Nacional"
+      local: "Nacional",
+      disciplinas: ["Auditoria Governamental", "Finanças Públicas", "Combate à Corrupção", "Contabilidade Pública"]
     },
     {
       id: "mock-4",
@@ -63,7 +66,8 @@ export default async function ConcursosPage() {
       vagas: 692,
       salario: "R$ 7.436,29",
       dataProva: "05/05/2026",
-      local: "Nacional"
+      local: "Nacional",
+      disciplinas: ["Língua Portuguesa", "Noções de Direito", "Realidade Brasileira", "Matemática"]
     }
   ];
 
@@ -176,6 +180,20 @@ export default async function ConcursosPage() {
                       <span>{concurso.salario}</span>
                     </div>
                   </div>
+                  
+                  {/* Disciplinas Específicas */}
+                  {concurso.disciplinas && (
+                    <div className="pt-3 border-t border-slate-100">
+                      <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Matérias Foco (Auditoria)</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {concurso.disciplinas.map((disc, idx) => (
+                          <span key={idx} className="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium px-2 py-0.5 rounded-md">
+                            {disc}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full sm:w-auto flex flex-col gap-3 sm:items-end">
