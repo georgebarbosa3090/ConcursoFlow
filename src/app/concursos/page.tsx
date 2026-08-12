@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Search, Building2, Calendar, FileText, ChevronRight, MapPin, Users } from "lucide-react";
 import prisma from "@/lib/prisma";
+import { ActiveButton } from "./active-button";
 
 export default async function ConcursosPage() {
   const session = await getServerSession(authOptions);
@@ -13,10 +14,10 @@ export default async function ConcursosPage() {
     redirect("/login");
   }
 
-  // Buscar concursos que o usuário já está matriculado/criou
+  // Buscar concursos que o usuário já está matriculado/criou, ordenados pelo último ativo (updatedAt)
   const meusConcursos = await prisma.exam.findMany({
     where: { userId: session.user.id },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { updatedAt: 'desc' }
   });
 
   // Mocks de concursos populares em aberto para simular um "Marketplace" de editais
@@ -111,14 +112,12 @@ export default async function ConcursosPage() {
               <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full">{meusConcursos.length}</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {meusConcursos.map(concurso => (
-                <div key={concurso.id} className="bg-white p-5 rounded-2xl border border-blue-200 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.1)] hover:shadow-[0_8px_30px_-4px_rgba(59,130,246,0.15)] transition-all group flex flex-col h-full relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -z-10 group-hover:bg-blue-100 transition-colors"></div>
+              {meusConcursos.map((concurso, idx) => (
+                <div key={concurso.id} className={`bg-white p-5 rounded-2xl border ${idx === 0 ? 'border-indigo-300 shadow-[0_4px_20px_-4px_rgba(99,102,241,0.15)] ring-2 ring-indigo-50' : 'border-blue-200 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.1)]'} hover:shadow-[0_8px_30px_-4px_rgba(59,130,246,0.15)] transition-all group flex flex-col h-full relative overflow-hidden`}>
+                  <div className={`absolute top-0 right-0 w-24 h-24 ${idx === 0 ? 'bg-indigo-50 group-hover:bg-indigo-100' : 'bg-blue-50 group-hover:bg-blue-100'} rounded-bl-full -z-10 transition-colors`}></div>
                   
                   <div className="flex justify-between items-start mb-4">
-                    <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-md">
-                      Em Andamento
-                    </span>
+                    <ActiveButton examId={concurso.id} isActive={idx === 0} />
                   </div>
                   
                   <h4 className="font-bold text-lg text-slate-900 leading-tight mb-2 line-clamp-2">
@@ -196,16 +195,19 @@ export default async function ConcursosPage() {
                   )}
                 </div>
 
-                <div className="w-full sm:w-auto flex flex-col gap-3 sm:items-end">
+                <div className="w-full sm:w-auto flex flex-col gap-3 sm:items-end justify-between">
                   <div className="text-left sm:text-right">
                     <p className="text-xs text-slate-400 font-medium">Data da Prova</p>
                     <p className="text-sm font-bold text-slate-700 flex items-center gap-1.5 sm:justify-end mt-0.5">
                       <Calendar size={14} /> {concurso.dataProva}
                     </p>
                   </div>
-                  <button className="w-full sm:w-auto px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
-                    Ver Detalhes
-                  </button>
+                  <Link 
+                    href={`/concursos/novo?title=${encodeURIComponent(concurso.title)}&board=${encodeURIComponent(concurso.board)}`}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm text-center flex items-center justify-center gap-2 group-hover:bg-blue-600"
+                  >
+                    Estudar para este
+                  </Link>
                 </div>
 
               </div>

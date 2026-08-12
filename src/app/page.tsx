@@ -23,9 +23,14 @@ export default async function DashboardPage() {
   const corretas = userAnswers.filter(a => a.isCorrect).length;
   const taxaAcerto = totalResolvidas > 0 ? Math.round((corretas / totalResolvidas) * 100) : 0;
 
-  // Busca o plano do usuário e sessões de hoje
-  const plan = await prisma.studyPlan.findFirst({
+  // Busca o concurso ativo (Foco Atual) e o seu respectivo plano de estudos
+  const activeExam = await prisma.exam.findFirst({
     where: { userId: session.user.id },
+    orderBy: { updatedAt: 'desc' }
+  });
+
+  const plan = activeExam ? await prisma.studyPlan.findFirst({
+    where: { userId: session.user.id, examId: activeExam.id },
     include: {
       exam: true,
       sessions: {
@@ -38,7 +43,7 @@ export default async function DashboardPage() {
         orderBy: { date: 'asc' }
       }
     }
-  });
+  }) : null;
 
   const sessoes = plan?.sessions || [];
   const exam = plan?.exam;

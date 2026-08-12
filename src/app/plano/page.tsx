@@ -16,9 +16,10 @@ export default async function ItinerarioPage() {
     redirect("/login");
   }
   
-  // Buscar os concursos do usuário com as disciplinas e tópicos
-  const exams = await prisma.exam.findMany({
+  // Buscar o concurso ativo (Foco Atual) do usuário
+  const exam = await prisma.exam.findFirst({
     where: { userId: session.user.id },
+    orderBy: { updatedAt: 'desc' },
     include: {
       subjects: {
         include: {
@@ -27,8 +28,6 @@ export default async function ItinerarioPage() {
       }
     }
   });
-
-  const exam = exams.length > 0 ? exams[0] : null;
 
   let sessoesDeHoje: any[] = [];
   let sessoesAmanha: any[] = [];
