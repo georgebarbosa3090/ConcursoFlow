@@ -171,26 +171,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 flex items-center gap-4">
-            <div className="flex-1 h-px bg-white/10"></div>
-            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Ou continue com</span>
-            <div className="flex-1 h-px bg-white/10"></div>
-          </div>
-
-          <button
-            onClick={handleGoogle}
-            disabled={loading}
-            className="w-full mt-6 flex items-center justify-center gap-3 bg-white text-slate-800 hover:bg-slate-100 font-bold py-3 rounded-lg transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {/* Ícone simples do Google em SVG */}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.8 15.72 17.58V20.34H19.28C21.36 18.42 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
-              <path d="M12 23C14.97 23 17.46 22.02 19.28 20.34L15.72 17.58C14.74 18.24 13.48 18.63 12 18.63C9.13 18.63 6.7 16.7 5.84 14.12H2.18V16.96C3.99 20.55 7.7 23 12 23Z" fill="#34A853"/>
-              <path d="M5.84 14.12C5.62 13.46 5.5 12.75 5.5 12C5.5 11.25 5.62 10.54 5.84 9.88V7.04H2.18C1.43 8.53 1 10.21 1 12C1 13.79 1.43 15.47 2.18 16.96L5.84 14.12Z" fill="#FBBC05"/>
-              <path d="M12 5.38C13.62 5.38 15.06 5.93 16.2 7.02L19.36 3.86C17.46 2.09 14.97 1 12 1C7.7 1 3.99 3.45 2.18 7.04L5.84 9.88C6.7 7.3 9.13 5.38 12 5.38Z" fill="#EA4335"/>
-            </svg>
-            Google
-          </button>
         </div>
       </div>
     </div>
