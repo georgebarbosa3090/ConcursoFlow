@@ -73,7 +73,7 @@ export function FiltrosClient() {
       </div>
 
       <div className="p-6 space-y-5">
-        {/* Row 1 */}
+        {/* Row 1 - Simplified Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
           <div className="md:col-span-1 relative flex">
             <input type="text" placeholder="Palavra Chave" className="w-full text-sm border-y border-l border-slate-300 rounded-l px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
@@ -82,48 +82,38 @@ export function FiltrosClient() {
             </button>
           </div>
           <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Disciplina 1 selecionado</option>
+            <option value="">Selecione Disciplina</option>
+            <option>Direito Constitucional</option>
+            <option>Direito Administrativo</option>
+            <option>Língua Portuguesa</option>
+            <option>Raciocínio Lógico</option>
+            <option>Informática</option>
           </select>
           <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Assunto 1 selecionado</option>
+            <option value="">Selecione Assunto</option>
+            <option>Direitos Fundamentais</option>
+            <option>Atos Administrativos</option>
+            <option>Licitações</option>
+            <option>Interpretação de Textos</option>
           </select>
           <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Banca</option>
+            <option value="">Banca</option>
             <option>Cebraspe</option>
             <option>FGV</option>
             <option>FCC</option>
           </select>
           <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Instituição</option>
+            <option value="">Instituição</option>
+            <option>Polícia Federal</option>
+            <option>Tribunal de Contas</option>
+            <option>Receita Federal</option>
           </select>
           <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Ano</option>
-            <option>2026</option>
-            <option>2025</option>
-          </select>
-        </div>
-
-        {/* Row 2 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3">
-          <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Cargo</option>
-          </select>
-          <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Nível</option>
-            <option>Superior</option>
-            <option>Médio</option>
-          </select>
-          <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Área de Formação</option>
-          </select>
-          <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Área de Atuação</option>
-          </select>
-          <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Modalidade</option>
-          </select>
-          <select className="md:col-span-1 text-sm border border-slate-300 rounded px-3 py-2 outline-none text-slate-700 bg-white shadow-sm">
-            <option>Dificuldade</option>
+            <option value="">Área de Formação</option>
+            <option>Direito</option>
+            <option>Contabilidade</option>
+            <option>Tecnologia da Informação</option>
+            <option>Qualquer Formação</option>
           </select>
         </div>
 

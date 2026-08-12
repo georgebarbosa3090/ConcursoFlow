@@ -60,12 +60,7 @@ export default async function DesempenhoPage() {
     };
   });
 
-  // Se o usuário não tiver disciplinas suficientes, preenchemos o radar para ele não ficar vazio ou em linha
-  if (radarData.length < 3) {
-    radarData.push({ subject: 'Raciocínio', current: 0, goal: 85, fullMark: 100 });
-    radarData.push({ subject: 'Interpretação', current: 0, goal: 85, fullMark: 100 });
-    radarData.push({ subject: 'Legislação', current: 0, goal: 85, fullMark: 100 });
-  }
+  // Se o usuário não tiver disciplinas suficientes, o radar ficará vazio, mas a UI cuida disso
 
   // Gráfico de Linha (Evolução por "Sessão" / Tempo)
   // Como são poucos dados por enquanto, vamos apenas criar um mock contínuo terminando na taxa atual

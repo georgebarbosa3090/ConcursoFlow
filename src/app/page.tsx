@@ -4,25 +4,75 @@ import { redirect } from "next/navigation";
 import { MainLayout } from "@/components/layout/main-layout";
 import { 
   CalendarDays, CheckCircle2, TrendingUp, Target, 
-  PlayCircle, Clock, BookOpen, FileText, ArrowRight, Bot
+  PlayCircle, Clock, BookOpen, FileText, ArrowRight, Bot,
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
+import prisma from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session || !session.user) redirect("/login");
+
+  // Fetch real data
+  const userAnswers = await prisma.userAnswer.findMany({
+    where: { userId: session.user.id }
+  });
+
+  const totalResolvidas = userAnswers.length;
+  const corretas = userAnswers.filter(a => a.isCorrect).length;
+  const taxaAcerto = totalResolvidas > 0 ? Math.round((corretas / totalResolvidas) * 100) : 0;
+
+  // Busca o plano do usuário e sessões de hoje
+  const plan = await prisma.studyPlan.findFirst({
+    where: { userId: session.user.id },
+    include: {
+      exam: true,
+      sessions: {
+        where: {
+          date: {
+            gte: new Date(new Date().setHours(0,0,0,0)),
+            lt: new Date(new Date().setHours(23,59,59,999))
+          }
+        },
+        orderBy: { date: 'asc' }
+      }
+    }
+  });
+
+  const sessoes = plan?.sessions || [];
+  const exam = plan?.exam;
+  const diasAteProva = "A definir"; // We don't have exam date in schema yet
 
   const metrics = [
-    { label: "Dias até a prova", value: "45", sub: "Polícia Federal 2026", color: "text-slate-900", icon: CalendarDays, bg: "bg-blue-50", iconColor: "text-blue-600" },
-    { label: "Meta Semanal",     value: "75%", sub: "18h de 24h cumpridas",  color: "text-slate-900", icon: Target,     bg: "bg-purple-50", iconColor: "text-purple-600" },
-    { label: "Questões Resolvidas", value: "1.204", sub: "Este mês: +312",   color: "text-slate-900", icon: CheckCircle2, bg: "bg-emerald-50", iconColor: "text-emerald-600" },
-    { label: "Taxa de Acertos",  value: "82%",   sub: "↑ 4% vs. semana passada", color: "text-green-700", icon: TrendingUp, bg: "bg-green-50", iconColor: "text-green-600" },
+    { label: "Dias até a prova", value: exam ? diasAteProva : "-", sub: exam?.title || "Nenhum edital ativo", color: "text-slate-900", icon: CalendarDays, bg: "bg-blue-50", iconColor: "text-blue-600" },
+    { label: "Meta Semanal",     value: sessoes.length > 0 ? "Em andamento" : "0%", sub: `${sessoes.length} sessões hoje`,  color: "text-slate-900", icon: Target,     bg: "bg-purple-50", iconColor: "text-purple-600" },
+    { label: "Questões Resolvidas", value: totalResolvidas.toString(), sub: "Total histórico",   color: "text-slate-900", icon: CheckCircle2, bg: "bg-emerald-50", iconColor: "text-emerald-600" },
+    { label: "Taxa de Acertos",  value: `${taxaAcerto}%`,   sub: totalResolvidas > 0 ? "Global" : "Faça questões", color: taxaAcerto > 70 ? "text-green-700" : "text-orange-600", icon: TrendingUp, bg: taxaAcerto > 70 ? "bg-green-50" : "bg-orange-50", iconColor: taxaAcerto > 70 ? "text-green-600" : "text-orange-600" },
   ];
 
-  const sessoes = [
-    { disciplina: "Direito Constitucional", topico: "Direitos Fundamentais", tipo: "Revisão", duracao: 45 },
-    { disciplina: "Informática",            topico: "Redes TCP/IP",           tipo: "Questões", duracao: 30 },
-  ];
+  // Dynamic Subject Progress
+  const subjectStats: Record<string, { total: number; correct: number }> = {};
+  
+  const answersWithTopics = await prisma.userAnswer.findMany({
+    where: { userId: session.user.id },
+    include: { question: { include: { topic: { include: { subject: true } } } } }
+  });
+
+  answersWithTopics.forEach(answer => {
+    const subjectName = answer.question.topic?.subject?.name || "Geral";
+    if (!subjectStats[subjectName]) {
+      subjectStats[subjectName] = { total: 0, correct: 0 };
+    }
+    subjectStats[subjectName].total++;
+    if (answer.isCorrect) subjectStats[subjectName].correct++;
+  });
+
+  const progressData = Object.keys(subjectStats).map((nome, index) => {
+    const pct = Math.round((subjectStats[nome].correct / subjectStats[nome].total) * 100);
+    const colors = ["bg-blue-500", "bg-purple-500", "bg-emerald-500", "bg-orange-500"];
+    return { nome: nome.length > 15 ? nome.substring(0, 15) + '...' : nome, pct, cor: colors[index % colors.length] };
+  });
 
   return (
     <MainLayout>
@@ -64,25 +114,44 @@ export default async function DashboardPage() {
                 Ver Itinerário <ArrowRight size={14} />
               </Link>
             </div>
-            <div className="divide-y divide-slate-50">
-              {sessoes.map((s, i) => (
-                <div key={i} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                      {s.tipo === "Questões" ? <FileText size={18} className="text-blue-600" /> : <BookOpen size={18} className="text-blue-600" />}
+            
+            {sessoes.length === 0 ? (
+              <div className="p-8 text-center text-slate-500">
+                <p>Nenhuma sessão programada para hoje.</p>
+                {!exam && (
+                  <Link href="/concursos" className="text-blue-600 font-medium hover:underline mt-2 inline-block">
+                    Importe um edital para gerar seu plano
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50">
+                {sessoes.map((s) => {
+                  const disciplina = s.type.split(" - ")[1]?.split(":")[0] || "Disciplina";
+                  const topico = s.type.split(": ")[1] || s.type;
+                  const tipo = s.type.split(" - ")[0];
+
+                  return (
+                    <div key={s.id} className="flex flex-col md:flex-row md:items-center justify-between px-6 py-4 hover:bg-slate-50 transition group gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                          {tipo.includes("Questões") ? <FileText size={18} className="text-blue-600" /> : <BookOpen size={18} className="text-blue-600" />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-slate-900">{disciplina}</p>
+                          <p className="text-xs text-slate-500 line-clamp-1">{topico} · {tipo} · {s.duration}min</p>
+                        </div>
+                      </div>
+                      <Link href="/questoes/resolver/first-available" className="flex items-center justify-center gap-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                        <PlayCircle size={16} /> Iniciar
+                      </Link>
                     </div>
-                    <div>
-                      <p className="font-bold text-sm text-slate-900">{s.disciplina}</p>
-                      <p className="text-xs text-slate-500">{s.topico} · {s.tipo} · {s.duracao}min</p>
-                    </div>
-                  </div>
-                  <button className="flex items-center gap-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg transition">
-                    <PlayCircle size={16} /> Iniciar
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="px-6 py-4">
+                  );
+                })}
+              </div>
+            )}
+            
+            <div className="px-6 py-4 border-t border-slate-50">
               <Link href="/plano" className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition">
                 <Clock size={16} /> Ver plano completo do dia
               </Link>
@@ -94,22 +163,23 @@ export default async function DashboardPage() {
             {/* Progresso por disciplina */}
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
               <h3 className="font-bold text-slate-900 mb-4">Progresso por Disciplina</h3>
-              {[
-                { nome: "Língua Portuguesa", pct: 65, cor: "bg-blue-500" },
-                { nome: "Dir. Constitucional", pct: 28, cor: "bg-purple-500" },
-                { nome: "Informática", pct: 80, cor: "bg-emerald-500" },
-                { nome: "Raciocínio Lógico", pct: 42, cor: "bg-orange-500" },
-              ].map(d => (
-                <div key={d.nome} className="mb-3 last:mb-0">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-700 font-medium text-xs">{d.nome}</span>
-                    <span className="text-slate-500 text-xs">{d.pct}%</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5">
-                    <div className={`h-1.5 rounded-full ${d.cor}`} style={{ width: `${d.pct}%` }} />
-                  </div>
+              {progressData.length === 0 ? (
+                <div className="text-center text-sm text-slate-500 py-4">
+                  Responda questões para gerar seu progresso.
                 </div>
-              ))}
+              ) : (
+                progressData.map(d => (
+                  <div key={d.nome} className="mb-3 last:mb-0">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-slate-700 font-medium text-xs">{d.nome}</span>
+                      <span className="text-slate-500 text-xs">{d.pct}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1.5">
+                      <div className={`h-1.5 rounded-full ${d.cor}`} style={{ width: `${d.pct}%` }} />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* Agente Bancas CTA */}
