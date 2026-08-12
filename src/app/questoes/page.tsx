@@ -3,6 +3,7 @@ import { Filter, Search, PlayCircle, BookX, Sparkles } from "lucide-react";
 import Link from "next/link";
 import prisma from "@/lib/prisma";
 import { GerarQuestoesBtn } from "./gerar-btn";
+import { FiltrosClient } from "./filtros-client";
 
 export const dynamic = "force-dynamic";
 
@@ -28,19 +29,7 @@ export default async function QuestoesPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Buscar por disciplina ou assunto..." 
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button className="flex items-center justify-center gap-2 px-6 py-2 bg-slate-100 text-slate-700 font-medium rounded-md hover:bg-slate-200 transition-colors border border-slate-300">
-            <Filter size={18} /> Filtros
-          </button>
-        </div>
+        <FiltrosClient />
 
         <div className="space-y-4">
           {questoes.length === 0 ? (
