@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
+import { getOrGeneratePlan } from "@/lib/plan";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function ItinerarioPage() {
   if (!session || !session.user) {
     redirect("/login");
   }
-
+  
   // Buscar os concursos do usuário com as disciplinas e tópicos
   const exams = await prisma.exam.findMany({
     where: { userId: session.user.id },
@@ -29,50 +30,45 @@ export default async function ItinerarioPage() {
 
   const exam = exams.length > 0 ? exams[0] : null;
 
-  // Se o usuário tiver um edital, geramos dinamicamente as "Sessões de Hoje" baseadas nos tópicos do edital
-  // Na versão final, isso viria da tabela StudySession alimentada pelo Algoritmo Genético
   let sessoesDeHoje: any[] = [];
+  let sessoesAmanha: any[] = [];
+  let todasSessoes: any[] = [];
   
-  if (exam && exam.subjects.length > 0) {
-    const s1 = exam.subjects[0];
-    if (s1 && s1.topics.length > 0) {
-      sessoesDeHoje.push({
-        id: 1, 
-        disciplina: s1.name, 
-        topico: s1.topics[0].name, 
-        tipo: "Teoria", 
-        duracao: 45,
-        status: "Pendente",
-        cor: "bg-blue-100 text-blue-700 border-blue-200",
-        icone: BookOpen
-      });
-    }
+  if (exam) {
+    const planoReal = await getOrGeneratePlan(session.user.id, exam.id);
+    if (planoReal && planoReal.sessions) {
+      todasSessoes = planoReal.sessions;
+      
+      const hoje = new Date();
+      hoje.setHours(0,0,0,0);
+      
+      const amanha = new Date(hoje);
+      amanha.setDate(amanha.getDate() + 1);
+      
+      const depois = new Date(hoje);
+      depois.setDate(depois.getDate() + 2);
 
-    const s2 = exam.subjects.length > 1 ? exam.subjects[1] : exam.subjects[0];
-    if (s2 && s2.topics.length > 0) {
-      sessoesDeHoje.push({
-        id: 2, 
-        disciplina: s2.name, 
-        topico: s2.topics.length > 1 ? s2.topics[1].name : s2.topics[0].name, 
-        tipo: "Questões", 
-        duracao: 30,
-        status: "Pendente",
-        cor: "bg-purple-100 text-purple-700 border-purple-200",
-        icone: FileText
+      // Filtra sessões do dia atual
+      sessoesDeHoje = planoReal.sessions.filter(s => {
+        const d = new Date(s.date);
+        return d >= hoje && d < amanha;
+      }).map((s, i) => ({
+        id: s.id,
+        disciplina: s.type.split(" - ")[1]?.split(":")[0] || "Disciplina",
+        topico: s.type.split(": ")[1] || s.type,
+        tipo: s.type.split(" - ")[0],
+        duracao: s.duration,
+        status: s.status === "PENDING" ? "Pendente" : "Concluído",
+        cor: i === 0 ? "bg-blue-100 text-blue-700 border-blue-200" : (i === 1 ? "bg-purple-100 text-purple-700 border-purple-200" : "bg-orange-100 text-orange-700 border-orange-200"),
+        icone: i === 0 ? BookOpen : (i === 1 ? FileText : AlertCircle)
+      }));
+
+      // Filtra sessões de amanhã para mostrar como "Próximos passos"
+      sessoesAmanha = planoReal.sessions.filter(s => {
+        const d = new Date(s.date);
+        return d >= amanha && d < depois;
       });
     }
-    
-    // Adicionamos uma sessão de revisão de algo aleatório
-    sessoesDeHoje.push({
-      id: 3, 
-      disciplina: s1?.name || "Geral", 
-      topico: "Revisão Espaçada (Algoritmo)", 
-      tipo: "Revisão Ativa", 
-      duracao: 20,
-      status: "Atrasado",
-      cor: "bg-orange-100 text-orange-700 border-orange-200",
-      icone: AlertCircle
-    });
   }
 
   return (
