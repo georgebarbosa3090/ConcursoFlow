@@ -84,33 +84,33 @@ export function ResolverClient({ questao }: { questao: Questao }) {
             const isSelected = selectedOption === opcao.id;
             const isCorrect = questao.correta === opcao.id;
             
-            let styleClass = "border-slate-200 hover:border-blue-400 hover:bg-blue-50 cursor-pointer";
+            let styleClass = "border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 cursor-pointer shadow-sm hover:shadow-md";
             let icon = null;
 
             if (isSubmitted) {
               if (isCorrect) {
-                styleClass = "border-green-500 bg-green-50 text-green-900";
-                icon = <CheckCircle className="text-green-500" size={20} />;
+                styleClass = "border-green-500 bg-green-50/80 text-green-900 shadow-md ring-1 ring-green-500/50";
+                icon = <CheckCircle className="text-green-600 drop-shadow-sm" size={22} />;
               } else if (isSelected && !isCorrect) {
-                styleClass = "border-red-500 bg-red-50 text-red-900";
-                icon = <XCircle className="text-red-500" size={20} />;
+                styleClass = "border-red-500 bg-red-50/80 text-red-900 shadow-md ring-1 ring-red-500/50 opacity-90";
+                icon = <XCircle className="text-red-600 drop-shadow-sm" size={22} />;
               } else {
-                styleClass = "border-slate-200 opacity-50 cursor-not-allowed";
+                styleClass = "border-slate-200 bg-slate-50/50 opacity-50 cursor-not-allowed";
               }
             } else if (isSelected) {
-              styleClass = "border-blue-600 bg-blue-50 text-blue-900 ring-1 ring-blue-600";
+              styleClass = "border-blue-500 bg-blue-50/80 text-blue-900 shadow-md ring-1 ring-blue-500/50 scale-[1.01]";
             }
 
             return (
               <div 
                 key={opcao.id}
                 onClick={() => !isSubmitted && setSelectedOption(opcao.id)}
-                className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${styleClass}`}
+                className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all duration-200 ease-in-out ${styleClass}`}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0
-                    ${isSubmitted ? (isCorrect ? 'border-green-500 text-green-500' : isSelected ? 'border-red-500 text-red-500' : 'border-slate-300 text-slate-400') 
-                    : (isSelected ? 'border-blue-600 text-blue-600' : 'border-slate-300 text-slate-400')}
+                <div className="flex items-center gap-4">
+                  <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-xs font-bold shrink-0 shadow-sm
+                    ${isSubmitted ? (isCorrect ? 'border-green-500 text-green-600 bg-white' : isSelected ? 'border-red-500 text-red-600 bg-white' : 'border-slate-300 text-slate-400 bg-white') 
+                    : (isSelected ? 'border-blue-500 text-blue-600 bg-white' : 'border-slate-300 text-slate-400 bg-white')}
                   `}>
                     {String.fromCharCode(65 + opcao.id)}
                   </div>

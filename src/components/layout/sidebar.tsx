@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { 
   LayoutDashboard, GraduationCap, Calendar, CheckSquare, 
   BarChart3, Settings, BookOpen, FileWarning, LogOut, Bot, Brain
@@ -23,9 +23,14 @@ const routes = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const userName = session?.user?.name || "Estudante";
+  const userEmail = session?.user?.email || "";
+  const initials = userName.substring(0, 2).toUpperCase();
 
   return (
-    <aside className="hidden md:flex h-screen w-64 flex-col bg-slate-950 text-white border-r border-slate-800 fixed top-0 left-0 z-50">
+    <aside className="hidden md:flex h-screen w-64 flex-col bg-slate-950 text-white border-r border-slate-800 fixed top-0 left-0 z-50 shadow-2xl">
       <div className="px-6 py-5 border-b border-slate-800">
         <h1 className="text-xl font-extrabold tracking-tight">
           <span className="text-blue-400">Concurso</span>
@@ -55,19 +60,19 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-slate-800">
+      <div className="p-3 border-t border-slate-800 bg-slate-950/50 backdrop-blur-md">
         <div className="flex items-center gap-3 px-3 py-2 mb-1">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
-            UD
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-inner">
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Usuário Demo</p>
-            <p className="text-xs text-slate-400 truncate">demo@demo.com</p>
+            <p className="text-sm font-medium text-white truncate">{userName}</p>
+            <p className="text-xs text-slate-400 truncate">{userEmail}</p>
           </div>
         </div>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="w-full flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-lg text-sm font-medium transition-colors"
         >
           <LogOut size={16} />
           Sair

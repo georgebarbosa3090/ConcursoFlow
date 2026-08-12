@@ -135,12 +135,16 @@ export default async function ItinerarioPage() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-xl shadow-sm text-white flex items-start gap-4">
-                <BrainCircuit size={32} className="text-indigo-200 shrink-0" />
-                <div>
-                  <h3 className="font-bold text-lg mb-1">Recalibração Automática de IA</h3>
-                  <p className="text-sm text-indigo-100 leading-relaxed mb-4">O motor adaptativo identificou baixo desempenho recente em {sessoesDeHoje[0]?.disciplina}. Substituímos a revisão planejada de hoje por um bloco focado nesse assunto crítico.</p>
-                  <button className="text-xs font-bold uppercase px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded backdrop-blur-sm transition-colors">
+              <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-700 to-indigo-800 p-6 rounded-2xl shadow-xl shadow-indigo-900/20 text-white flex items-start gap-5 border border-indigo-500/30">
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white/10 blur-3xl rounded-full pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-indigo-400/20 blur-3xl rounded-full pointer-events-none"></div>
+                <div className="relative z-10 p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10 shrink-0 shadow-inner">
+                  <BrainCircuit size={28} className="text-indigo-100" />
+                </div>
+                <div className="relative z-10 flex-1">
+                  <h3 className="font-extrabold text-lg mb-1.5 tracking-tight text-white drop-shadow-sm">Recalibração Automática de IA</h3>
+                  <p className="text-sm text-indigo-100/90 leading-relaxed mb-5 font-medium">O motor adaptativo identificou baixo desempenho recente em <span className="text-white font-bold bg-white/10 px-1.5 py-0.5 rounded">{sessoesDeHoje[0]?.disciplina || "sua última sessão"}</span>. Substituímos a revisão planejada de hoje por um bloco focado nesse assunto crítico.</p>
+                  <button className="text-xs font-bold uppercase tracking-wider px-4 py-2 bg-white text-indigo-700 hover:bg-indigo-50 rounded-lg shadow-md transition-all active:scale-95 flex items-center gap-2">
                     Ver Relatório Detalhado
                   </button>
                 </div>
